@@ -1,3 +1,4 @@
+// Asyncronously loads a javascript with a given url and executes an optional callback
 if (typeof munter === 'undefined') {
     munter = {}
 }
