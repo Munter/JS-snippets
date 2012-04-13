@@ -3,18 +3,19 @@ if (typeof munter === 'undefined') {
     munter = {}
 }
 
-munter.defer = (function () {
-    var urls = [];
-    
+munter.defer = (function (document, script) {
+    var urls = [],
+        firstScript = document.getElementsByTagName(script)[0];
+
     return function (url, callback) {
         var inc;
-        
+
         if (url && urls.indexOf(url) === -1) {
-            inc = document.createElement('script');
+            inc = document.createElement(script);
             inc.async = true;
             inc.src = url;
             inc.onload = callback || function () {};
-            document.getElementsByTagName('head')[0].appendChild(inc);
+            firstScript.parentNode.insertBefore(inc, firstScript);
         }
     }
-}());
+}(document, 'script'));
