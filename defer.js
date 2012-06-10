@@ -1,21 +1,60 @@
+/*global munter:true, document*/
 // Asyncronously loads a javascript with a given url and executes an optional callback
 if (typeof munter === 'undefined') {
-    munter = {}
+    munter = {};
 }
 
 munter.defer = (function (document, script) {
-    var urls = [],
+    "use strict";
+    var scripts = {},
         firstScript = document.getElementsByTagName(script)[0];
 
-    return function (url, callback) {
-        var inc;
+    return function (urls, callback) {
+        var ringRing = function () {
+                var callMe = true;
+                urls.forEach(function (url) {
+                    if (typeof scripts[url] !== 'undefined' && !scripts[url].onloadDone) {
+                        callMe = false;
+                    }
+                });
+                if (callMe) {
+                    callback();
+                }
+            },
+            callMe = callback && true;
 
-        if (url && urls.indexOf(url) === -1) {
-            inc = document.createElement(script);
-            inc.async = true;
-            inc.src = url;
-            inc.onload = callback || function () {};
-            firstScript.parentNode.insertBefore(inc, firstScript);
+        if (typeof urls === 'string') {
+            urls = [urls];
         }
-    }
+
+        urls.forEach(function (url) {
+            var inc;
+
+            if (typeof scripts[url] === 'undefined') {
+                callMe = false;
+                inc = document.createElement(script);
+                inc.async = true;
+                inc.src = url;
+                if (callback) {
+                    inc.onload = function () {
+                        if (!inc.onloadDone) {
+                            inc.onloadDone = true;
+                            ringRing();
+                        }
+                    };
+                    inc.onreadystatechange = function () {
+                        if (inc.readyState === "loaded" || inc.readyState === "complete") {
+                            inc.onload();
+                        }
+                    };
+                }
+                firstScript.parentNode.insertBefore(inc, firstScript);
+                scripts[url] = inc;
+            }
+        });
+
+        if (callMe) {
+            ringRing();
+        }
+    };
 }(document, 'script'));
