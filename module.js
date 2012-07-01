@@ -8,7 +8,7 @@
     If no module system is detected your module will be available
     in the global scope instead.
 */
-(function() {
+(function(window, module) {
     var myModule = {};
 
     if (typeof module !== 'undefined') {
@@ -20,9 +20,9 @@
             define([], function () {
                 return myModule;
             });
-        } else if (window) {
+        } else if (typeof window !== 'undefined') {
             // Fall back to installing histogram in window scope
             window.myModule = myModule;
         }
     }
-}());
+}(window, module));
